@@ -4,8 +4,13 @@ Registers ``deepseek`` as a Hermes web backend using the raw JSON API at
 https://api.deepseek.com/v1/tools/{search,fetch}.
 
 Auth: same ``DEEPSEEK_API_KEY`` as the model API (Bearer).
-Pricing: 5 CNY per 1,000 successful requests, per endpoint.
-Rate limit: 5 QPS per account, search and fetch counted separately.
+Pricing: $0.75 per 1,000 successful requests, per endpoint — failed requests,
+empty result sets and timeouts are not billed.
+Rate limit: 5 QPS per account per endpoint (search and fetch independent), plus a
+per-domain QPS limit on fetch. Query operators (``site:``, ``-site:``, ``"..."``,
+``lang:``, ``after:``, ``before:``) pass straight through — the query is forwarded
+with its syntax intact.
+Docs: https://api-docs.deepseek.com/guides/search
 Extract returns Markdown only — the vendor has no HTML/text variant, so the
 ``format`` kwarg the tool forwards is ignored on purpose.
 """
@@ -162,10 +167,10 @@ class DeepSeekWebSearchProvider(WebSearchProvider):
             "env": ["DEEPSEEK_API_KEY"],
             "url": "https://platform.deepseek.com",
             "description": (
-                "DeepSeek 自研搜索引擎 + 服务端网页抓取。同一把模型 API key，"
-                "5 元 / 1000 次成功请求，各端点 5 QPS。服务端发起请求，"
-                "不受本机 DNS / 代理干扰；但只抓静态 HTML —— 反爬站点"
-                "（知乎 / X / NYT 实测）返回 404，且只输出 Markdown（无 HTML 版本）。"
+                "DeepSeek 自研 AI 搜索引擎（索引数千亿网页、多语种、过滤 SEO 垃圾站）+ 服务端网页抓取。"
+                "同一把模型 API key，$0.75 / 1000 次成功请求（失败、空结果、超时不计费），"
+                "各端点 5 QPS，抓取另有每域 QPS 限制。服务端发起请求，不受本机 DNS / 代理干扰；"
+                "但只抓静态 HTML —— 反爬站点（知乎 / X / NYT 实测）返回 404，且只输出 Markdown（无 HTML 版本）。"
             ),
         }
 

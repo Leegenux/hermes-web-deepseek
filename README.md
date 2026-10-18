@@ -11,6 +11,30 @@ routes the built-in `web_search` / `web_extract` tools through
 - Per-URL failure isolation, one retry on `408/429/5xx`, cancel-aware, honest
   `supports_search()` / `supports_extract()`
 
+## What DeepSeek opened up (2026-10-17 changelog)
+
+From [api-docs.deepseek.com/updates](https://api-docs.deepseek.com/updates/) —
+*"Opening up the in-house search API"*:
+
+> DeepSeek's web and API search capabilities are powered by our in-house DeepSeek
+> search engine, which reliably handles hundreds of millions of search requests from
+> around the world every day. DeepSeek Search is an AI-native general-purpose search
+> engine that indexes hundreds of billions of web pages, supports multilingual
+> search, and returns highly relevant, authoritative, and timely results in real
+> time. It filters SEO spam, GEO manipulation, and low-quality AIGC through strict
+> detection mechanisms.
+
+That is the capability this plugin exposes to Hermes: the same engine behind
+DeepSeek's own web/APP search, reachable as `web_search` / `web_extract`.
+
+Search queries forward their syntax intact, so the vendor's operators work
+unchanged: `site:`, `-site:`, `"exact phrase"`, `-term`, `lang:zh,en`,
+`after:2025-01-01`, `before:2026-06-01`.
+
+Results also carry `rerank_score`, `authority` (0–4), `date` and `site_name`; this
+provider maps `summary` → `description` and drops the rest, because Hermes'
+`web_search` row shape is `title/url/description/position`.
+
 ## Install
 
 ```bash
@@ -38,11 +62,15 @@ A gateway restart applies new plugin code; a fresh CLI session reads it automati
 
 ## Cost and disclosure
 
-- **5 CNY per 1,000 successful requests, per endpoint.** Every `web_search` /
-  `web_extract` call is a separate server-side request to `api.deepseek.com` and is
-  billed by DeepSeek.
-- **5 QPS per account**, search and fetch counted separately. The provider runs at
-  most 5 concurrent fetches, which is exactly that budget.
+- **$0.75 per 1,000 successful requests, per endpoint** (Search and Fetch billed
+  separately, per the [official billing table](https://api-docs.deepseek.com/guides/search#billing)).
+  A request is billable only when it returns HTTP 200 **and** produces a result —
+  failed requests, empty result sets and timeouts are free. `count` does not affect
+  the price.
+- **5 QPS per account per endpoint**, search and fetch metered independently; Fetch
+  additionally has a **per-domain QPS limit**, so a burst against one host can return
+  `429` (the provider retries once). The provider runs at most 5 concurrent fetches,
+  which is exactly the account budget.
 - Credentials: only `DEEPSEEK_API_KEY`, sent as a Bearer token to
   `api.deepseek.com`. Nothing is stored by the plugin.
 

@@ -1,6 +1,6 @@
 name: web-deepseek
-version: 1.1.0
-description: "DeepSeek Search + Fetch backend. Reuses DEEPSEEK_API_KEY; 5 CNY / 1,000 successful requests per endpoint."
+version: 1.1.1
+description: "DeepSeek Search + Fetch backend on DeepSeek's in-house AI search engine. Reuses DEEPSEEK_API_KEY; $0.75 per 1,000 successful requests per endpoint."
 author: Evan + Hermes
 kind: backend
 provides_web_providers:
