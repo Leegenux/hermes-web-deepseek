@@ -52,11 +52,14 @@ hermes plugins enable web-deepseek
 Put `DEEPSEEK_API_KEY` in `.env` (the same key the model API uses), then select it:
 
 ```bash
-hermes config set web.search_backend deepseek
-hermes config set web.extract_backend deepseek
+hermes config set web.search_backend deepseek-web
+hermes config set web.extract_backend deepseek-web
 # or both at once
-hermes config set web.backend deepseek
+hermes config set web.backend deepseek-web
 ```
+
+The provider id is **`deepseek-web`** — not `deepseek`, which another catalog entry
+already registers (two providers cannot share an id; whichever loads last wins).
 
 A gateway restart applies new plugin code; a fresh CLI session reads it automatically.
 
